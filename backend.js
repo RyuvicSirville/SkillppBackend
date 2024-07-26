@@ -36,7 +36,7 @@ const authenticateJwt = (req, res, next) => {
   }
 };
 
-mongoose.connect('mongodb+srv://bimal79:Ru2GTw1knWc794uu@clusterskilpp.3uaaq0e.mongodb.net/SkillppZairza', { useNewUrlParser: true, useUnifiedTopology: true, dbName: "SkillppZairza" });
+mongoose.connect('mongodb+srv://username:<password>@clusterskilpp.3uaaq0e.mongodb.net/SkillppZairza', { useNewUrlParser: true, useUnifiedTopology: true, dbName: "SkillppZairza" });
 
 // User routes
 app.post('/user/signup', async(req, res) => {
