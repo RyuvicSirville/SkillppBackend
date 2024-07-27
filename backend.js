@@ -5,6 +5,8 @@ const cors = require('cors')
 const app = express();
 app.use(cors())
 app.use(express.json());
+require("dotenv").config();
+
 
 const userSchema = new mongoose.Schema({
     username: String,
@@ -18,7 +20,7 @@ const USERS = mongoose.model('User', userSchema);
 
 console.log(USERS);
 
-const SECRET = 'Zaiza_is_LOB';
+const SECRET = process.env.SECRET_KEY;
 
 const authenticateJwt = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -36,7 +38,7 @@ const authenticateJwt = (req, res, next) => {
   }
 };
 
-mongoose.connect('mongodb+srv://username:<password>@clusterskilpp.3uaaq0e.mongodb.net/SkillppZairza', { useNewUrlParser: true, useUnifiedTopology: true, dbName: "SkillppZairza" });
+mongoose.connect(process.env.MONGO_URL);
 
 // User routes
 app.post('/user/signup', async(req, res) => {
@@ -49,7 +51,7 @@ app.post('/user/signup', async(req, res) => {
     const obj = { username: username, password: password };
       const newUser = new USERS(obj);
       await  newUser.save();
-      const token = jwt.sign({ username, role: 'user' }, SECRET, { expiresIn: '1h' });
+      const token = jwt.sign({ username, role: 'user' }, SECRET, { expiresIn: process.env.TOKEN_TIMEOUT });
       res.json({ message: 'User created successfully', token });
   }
 });
@@ -60,7 +62,7 @@ app.post('/user/login', async(req, res) => {
     const user = await USERS.findOne({ username,password });
     console.log(user);
     if (user) {
-      const token = jwt.sign({ username, role: 'user' }, SECRET, { expiresIn: '1h' });
+      const token = jwt.sign({ username, role: 'user' }, SECRET, { expiresIn: process.env.TOKEN_TIMEOUT });
       res.json({ message: 'User found successfully', USERS, token });
     } else {
       res.status(403).json(user);
