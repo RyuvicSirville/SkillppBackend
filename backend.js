@@ -9,15 +9,80 @@ require("dotenv").config();
 
 
 const userSchema = new mongoose.Schema({
-    username: String,
-    password: String,
-    referal: String
-  });
+  username: {
+    type: String,
+    required: true,
+  },
+  regno: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  ph: {
+    type: Number,
+    required: true,
+    maxLength: 10,
+  },
+  branch: {
+    type: String,
+    required: true,
+  },
+  year: {
+    type: Number,
+    required: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  }
+});
 
-
+const taskSchema = new mongoose.Schema({
+  regno: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  domain1: {
+    description: {
+        type: String,
+        url: String,
+        required: true
+    },
+    task:{
+      type:String,
+      default:""
+    },
+    badge: {
+        url: String,
+    },
+    isCompleted: {
+        type: Boolean,
+        default: false
+    }
+},
+  domain2: {
+    description: {
+        type: String,
+        url: String,
+        required: true
+    },
+    task:{
+      type:String,
+      default:""
+    },
+    badge: {
+        url: String,
+    },
+    isCompleted: {
+        type: Boolean,
+        default: false
+    }
+},
+})
 
 const USERS = mongoose.model('User', userSchema);
-
+const TASKS = mongoose.model('Task',taskSchema);
 console.log(USERS);
 
 const SECRET = process.env.SECRET_KEY;
@@ -41,34 +106,74 @@ const authenticateJwt = (req, res, next) => {
 mongoose.connect(process.env.MONGO_URL);
 
 // User routes
-app.post('/user/signup', async(req, res) => {
-  const { username, password } = req.body;
-  const user = await USERS.findOne({username});
+app.post('/user/signup', async (req, res) => {
+  const userDetails = req.body;
+  const regno = userDetails.regno;
+  const user = await USERS.findOne({ regno });
   console.log("user signup");
   if (user) {
-    res.status(403).json({ message: 'user already exists' });
-  } else {
-    const obj = { username: username, password: password };
-      const newUser = new USERS(obj);
-      await  newUser.save();
-      const token = jwt.sign({ username, role: 'user' }, SECRET, { expiresIn: process.env.TOKEN_TIMEOUT });
-      res.json({ message: 'User created successfully', token });
+    res.status(403).json({ message: 'User already exists' });
   }
+  else {
+    const newUser = new USERS(userDetails);
+    const newTask = new TASKS({
+      regno:userDetails.regno,
+      domain1:userDetails.domain1,
+      domain2:userDetails.domain2
+    })
+    await newUser.save();
+    await newTask.save();
+    const token = jwt.sign({ regno, role: 'user' }, SECRET, { expiresIn: process.env.TOKEN_TIMEOUT });
+    res.json({ message: 'User created successfully', token });
+  }
+
 });
 console.log(USERS);
-app.post('/user/login', async(req, res) => {
-    console.log(USERS);
-    const { username, password } = req.body;
-    const user = await USERS.findOne({ username,password });
-    console.log(user);
-    if (user) {
-      const token = jwt.sign({ username, role: 'user' }, SECRET, { expiresIn: process.env.TOKEN_TIMEOUT });
-      res.json({ message: 'User found successfully', USERS, token });
-    } else {
-      res.status(403).json(user);
-    }
+app.get('/user/login', async (req, res) => {
+  console.log(USERS);
+  const userDetails = req.body;
+  const reg = {
+    regno:userDetails.regno,
+    password:userDetails.password
   }
+  const user = await USERS.findOne(reg);
+  console.log(user);
+  if (user) {
+    const token = jwt.sign({ regno:reg.regno, role: 'user' }, SECRET, { expiresIn: process.env.TOKEN_TIMEOUT });
+    res.json({ message: 'User found successfully', user, token });
+  } else {
+    res.status(403).json(user);
+  }
+}
 );
-
-
+app.get('/user/dashboard', async (req, res) => {
+  const userDetails = req.body;
+  const regno = userDetails.regno;
+  const user = await USERS.findOne({ regno });
+  const task = await TASKS.findOne({ regno });
+  if (user) {
+    res.json({
+      username:user.username,
+      year:user.year,
+      branch:user.branch,
+      domain1: task.domain1,
+      domain2: task.domain2
+    });
+  } else {
+    res.status(403).json({ message: 'User not found' });
+  }
+});
+app.get('/user/self',authenticateJwt,(req,res)=>{
+  res.json({
+   username: req.user.username
+  })
+})
+app.put('/user/domain', authenticateJwt, async (req, res) => {
+  const course = await TASKS.findOneAndUpdate({regno:req.body.regno},req.body,{ new: true });
+  if (course) {
+    res.json({ message: 'Course updated successfully' });
+  } else {
+    res.status(404).json({ message: 'Course not found' });
+  }
+});
 app.listen(3000, () => console.log('Server running on port 3000'));
