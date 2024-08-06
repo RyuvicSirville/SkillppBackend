@@ -130,8 +130,14 @@ app.post('/user/signup', async (req, res) => {
     const newUser = new USERS(userDetails);
     const newTask = new TASKS({
       regNo: userDetails.regNo,
-      domain1: userDetails.domain1,
-      domain2: userDetails.domain2
+      domain1: {
+        description:userDetails.domain1,
+        drive:userDetails.drive1
+      },
+      domain2: {
+        description:userDetails.domain2,
+        drive:userDetails.drive2
+      }
     })
     await newUser.save();
     await newTask.save();
