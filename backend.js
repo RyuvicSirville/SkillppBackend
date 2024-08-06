@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
 });
 
 const taskSchema = new mongoose.Schema({
-  regno: {
+  regNo: {
     type: String,
     required: true,
     unique: true
@@ -120,8 +120,8 @@ mongoose.connect(process.env.MONGO_URL);
 // User routes
 app.post('/user/signup', async (req, res) => {
   const userDetails = req.body;
-  const regno = userDetails.regno;
-  const user = await USERS.findOne({ regno });
+  const regNo = userDetails.regNo;
+  const user = await USERS.findOne({ regNo });
   console.log("user signup");
   if (user) {
     res.status(403).json({ message: 'User already exists' });
@@ -129,7 +129,7 @@ app.post('/user/signup', async (req, res) => {
   else {
     const newUser = new USERS(userDetails);
     const newTask = new TASKS({
-      regno: userDetails.regno,
+      regNo: userDetails.regNo,
       domain1: userDetails.domain1,
       domain2: userDetails.domain2
     })
@@ -160,9 +160,9 @@ app.post('/user/login', async (req, res) => {
 );
 app.get('/user/dashboard', async (req, res) => {
   const userDetails = req.body;
-  const regno = userDetails.regno;
-  const user = await USERS.findOne({ regno });
-  const task = await TASKS.findOne({ regno });
+  const regNo = userDetails.regNo;
+  const user = await USERS.findOne({ regNo });
+  const task = await TASKS.findOne({ regNo });
   if (user) {
     res.json({
       username: user.username,
@@ -183,7 +183,7 @@ app.get('/user/self', authenticateJwt, async (req, res) => {
   })
 })
 app.put('/user/domain', authenticateJwt, async (req, res) => {
-  const course = await TASKS.findOneAndUpdate({ regno: req.body.regno }, req.body, { new: true });
+  const course = await TASKS.findOneAndUpdate({ regNo: req.body.regNo }, req.body, { new: true });
   if (course) {
     res.json({ message: 'Course updated successfully' });
   } else {
