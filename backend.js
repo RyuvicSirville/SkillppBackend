@@ -17,12 +17,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  regno: {
+  regNo: {
     type: Number,
     required: true,
     unique: true
   },
-  ph: {
+  phNo: {
     type: Number,
     required: true,
     maxLength: 10,
