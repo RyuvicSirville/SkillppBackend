@@ -13,8 +13,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  regno: {
+  email: {
     type: String,
+    required: true,
+  },
+  regno: {
+    type: Number,
     required: true,
     unique: true
   },
@@ -28,7 +32,7 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   year: {
-    type: Number,
+    type: String,
     required: true,
   },
   password: {
@@ -45,44 +49,52 @@ const taskSchema = new mongoose.Schema({
   },
   domain1: {
     description: {
-        type: String,
-        url: String,
-        required: true
+      type: String,
+      url: String,
+      required: true
     },
-    task:{
-      type:String,
-      default:""
+    drive: {
+      type: String,
+      default: ""
+    },
+    task: {
+      type: String,
+      default: ""
     },
     badge: {
-        url: String,
+      url: String,
     },
     isCompleted: {
-        type: Boolean,
-        default: false
+      type: Boolean,
+      default: false
     }
-},
+  },
   domain2: {
     description: {
-        type: String,
-        url: String,
-        required: true
+      type: String,
+      url: String,
+      required: true
     },
-    task:{
-      type:String,
-      default:""
+    drive: {
+      type: String,
+      default: ""
+    },
+    task: {
+      type: String,
+      default: ""
     },
     badge: {
-        url: String,
+      url: String,
     },
     isCompleted: {
-        type: Boolean,
-        default: false
+      type: Boolean,
+      default: false
     }
-},
+  },
 })
 
 const USERS = mongoose.model('User', userSchema);
-const TASKS = mongoose.model('Task',taskSchema);
+const TASKS = mongoose.model('Task', taskSchema);
 console.log(USERS);
 
 const SECRET = process.env.SECRET_KEY;
@@ -117,29 +129,29 @@ app.post('/user/signup', async (req, res) => {
   else {
     const newUser = new USERS(userDetails);
     const newTask = new TASKS({
-      regno:userDetails.regno,
-      domain1:userDetails.domain1,
-      domain2:userDetails.domain2
+      regno: userDetails.regno,
+      domain1: userDetails.domain1,
+      domain2: userDetails.domain2
     })
     await newUser.save();
     await newTask.save();
-    const token = jwt.sign({ regno, role: 'user' }, SECRET, { expiresIn: process.env.TOKEN_TIMEOUT });
+    const token = jwt.sign({ email: userDetails.email, role: 'user' }, SECRET, { expiresIn: process.env.TOKEN_TIMEOUT });
     res.json({ message: 'User created successfully', token });
   }
 
 });
 console.log(USERS);
-app.get('/user/login', async (req, res) => {
+app.post('/user/login', async (req, res) => {
   console.log(USERS);
   const userDetails = req.body;
   const reg = {
-    regno:userDetails.regno,
-    password:userDetails.password
+    email: userDetails.email,
+    password: userDetails.password
   }
   const user = await USERS.findOne(reg);
   console.log(user);
   if (user) {
-    const token = jwt.sign({ regno:reg.regno, role: 'user' }, SECRET, { expiresIn: process.env.TOKEN_TIMEOUT });
+    const token = jwt.sign({ email: reg.email, role: 'user' }, SECRET, { expiresIn: process.env.TOKEN_TIMEOUT });
     res.json({ message: 'User found successfully', user, token });
   } else {
     res.status(403).json(user);
@@ -153,9 +165,9 @@ app.get('/user/dashboard', async (req, res) => {
   const task = await TASKS.findOne({ regno });
   if (user) {
     res.json({
-      username:user.username,
-      year:user.year,
-      branch:user.branch,
+      username: user.username,
+      year: user.year,
+      branch: user.branch,
       domain1: task.domain1,
       domain2: task.domain2
     });
@@ -163,17 +175,19 @@ app.get('/user/dashboard', async (req, res) => {
     res.status(403).json({ message: 'User not found' });
   }
 });
-app.get('/user/self',authenticateJwt,(req,res)=>{
+app.get('/user/self', authenticateJwt, async (req, res) => {
+  const email = req.user.email;
+  const user = await USERS.findOne({ email });
   res.json({
-   username: req.user.username
+    username: user.username
   })
 })
 app.put('/user/domain', authenticateJwt, async (req, res) => {
-  const course = await TASKS.findOneAndUpdate({regno:req.body.regno},req.body,{ new: true });
+  const course = await TASKS.findOneAndUpdate({ regno: req.body.regno }, req.body, { new: true });
   if (course) {
     res.json({ message: 'Course updated successfully' });
   } else {
     res.status(404).json({ message: 'Course not found' });
   }
 });
-app.listen(3000, () => console.log('Server running on port 3000'));
+app.listen(3001, () => console.log('Server running on port 3001'));
