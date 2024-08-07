@@ -18,9 +18,11 @@ app.post('/user/signup', async (req, res) => {
   const userDetails = req.body;
   const regNo = userDetails.regNo;
   const user = await USERS.findOne({ regNo });
-  console.log("user signup");
+  
   if (user) {
+    console.log("User already exists");
     res.status(403).json({ message: 'User already exists' });
+    
   }
   else {
     const newUser = new USERS(userDetails);
@@ -37,6 +39,7 @@ app.post('/user/signup', async (req, res) => {
     })
     await newUser.save();
     await newTask.save();
+    console.log("User created successfully");
     res.json({ message: 'User created successfully' });
   }
 
