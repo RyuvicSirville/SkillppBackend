@@ -6,7 +6,7 @@ const app = express();
 app.use(cors())
 app.use(express.json());
 require("dotenv").config();
-const { USERS , TASKS } = require("./db");
+const { USERS, TASKS } = require("./db");
 const { SECRET } = require("./middleware/auth")
 const { authenticateJwt } = require("./middleware/auth");
 
@@ -18,23 +18,23 @@ app.post('/user/signup', async (req, res) => {
   const userDetails = req.body;
   const regNo = userDetails.regNo;
   const user = await USERS.findOne({ regNo });
-  
+
   if (user) {
     console.log("User already exists");
     res.status(403).json({ message: 'User already exists' });
-    
+
   }
   else {
     const newUser = new USERS(userDetails);
     const newTask = new TASKS({
       regNo: userDetails.regNo,
       domain1: {
-        description:userDetails.domain1,
-        drive:userDetails.drive1
+        description: userDetails.domain1,
+        drive: userDetails.drive1
       },
       domain2: {
-        description:userDetails.domain2,
-        drive:userDetails.drive2
+        description: userDetails.domain2,
+        drive: userDetails.drive2
       }
     })
     await newUser.save();
@@ -62,19 +62,19 @@ app.post('/user/login', async (req, res) => {
   }
 }
 );
-app.get('/user/dashboard', async (req, res) => {
-  const userDetails = req.body;
-  const regNo = userDetails.regNo;
-  const user = await USERS.findOne({ regNo });
+app.get('/user/dashboard', authenticateJwt, async (req, res) => {
+  const email = req.user.email;
+  const user = await USERS.findOne({ email });
+  const regNo = user.regNo;
   const task = await TASKS.findOne({ regNo });
+  const userData = {
+    username: user.username,
+    email: user.email,
+    domain1: task.domain1,
+    domain2: task.domain2
+  }
   if (user) {
-    res.json({
-      username: user.username,
-      year: user.year,
-      branch: user.branch,
-      domain1: task.domain1,
-      domain2: task.domain2
-    });
+    res.json({userData});
   } else {
     res.status(403).json({ message: 'User not found' });
   }
