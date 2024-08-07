@@ -84,11 +84,11 @@ app.get('/user/self', authenticateJwt, async (req, res) => {
   })
 })
 app.put('/user/domain', authenticateJwt, async (req, res) => {
-  const course = await TASKS.findOneAndUpdate({ regNo: req.body.regNo }, req.body, { new: true });
-  if (course) {
-    res.json({ message: 'Course updated successfully' });
+  const user = await TASKS.findOneAndUpdate({ regNo: req.body.regNo }, req.body, { new: true });
+  if (user) {
+    res.json({ message: 'user updated successfully' });
   } else {
-    res.status(404).json({ message: 'Course not found' });
+    res.status(404).json({ message: 'user not found' });
   }
 });
 app.listen(3001, () => console.log('Server running on port 3001'));
