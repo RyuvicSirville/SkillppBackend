@@ -37,8 +37,7 @@ app.post('/user/signup', async (req, res) => {
     })
     await newUser.save();
     await newTask.save();
-    const token = jwt.sign({ email: userDetails.email, role: 'user' }, SECRET, { expiresIn: process.env.TOKEN_TIMEOUT });
-    res.json({ message: 'User created successfully', token });
+    res.json({ message: 'User created successfully' });
   }
 
 });
