@@ -103,4 +103,15 @@ app.put('/user/domain', authenticateJwt, async (req, res) => {
     res.status(404).json({ message: 'user not found' });
   }
 });
+
+app.post('/user/updateTask/:id',async (req,res)=>{
+  try {
+    const {domain,week}=req.body;
+    const user = await TASKS.findOneAndUpdate({ _id: req.params.id }, {[`${domain}.${week}.isCompleted`]:true}, { new: true });
+    res.json({message:'Approved successfully'})
+  } catch (error) {
+    res.status(404).json({ error: error });
+  }
+}
+)
 app.listen(3001, () => console.log('Server running on port 3001'));
