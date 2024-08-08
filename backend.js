@@ -104,7 +104,7 @@ app.put('/user/domain', authenticateJwt, async (req, res) => {
   }
 });
 
-app.post('/user/updateTask/:id',async (req,res)=>{
+app.post('/user/updatetask/:id',async (req,res)=>{
   try {
     const {domain,week}=req.body;
     const user = await TASKS.findOneAndUpdate({ _id: req.params.id }, {[`${domain}.${week}.isCompleted`]:true}, { new: true });
