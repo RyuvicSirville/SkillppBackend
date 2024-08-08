@@ -28,6 +28,7 @@ app.post('/user/signup', async (req, res) => {
     const newUser = new USERS(userDetails);
     const newTask = new TASKS({
       regNo: userDetails.regNo,
+      email:userDetails.email,
       domain1: {
         description: userDetails.domain1,
         drive: userDetails.drive1
