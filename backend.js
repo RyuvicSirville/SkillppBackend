@@ -86,6 +86,14 @@ app.get('/user/self', authenticateJwt, async (req, res) => {
     username: user.username
   })
 })
+app.get('/user/alluser', async (req, res) => {
+  
+  const tasks = await TASKS.find({ });
+  res.json({
+    tasks:tasks
+  })
+})
+
 app.put('/user/domain', authenticateJwt, async (req, res) => {
   const user = await TASKS.findOneAndUpdate({ regNo: req.body.regNo }, req.body, { new: true });
   if (user) {
